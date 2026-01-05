@@ -12,15 +12,6 @@ This will be moved into the `/opt/techtoday-agent`
 
 ```
 DOMAIN_NAME=http://localhost
-# Mail
-MAIL_USERNAME=
-MAIL_PASSWORD=
-# WhatsApp Integration
-WHATSAPP_ACCESS_TOKEN= 
-WEBHOOK_VERIFY_TOKEN=
-# Google Authentication
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
 # AI/LLM Configuration
 OPENAI_API_KEY=
 # Authentication & API Tokens
