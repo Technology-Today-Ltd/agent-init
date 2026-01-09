@@ -151,3 +151,5 @@ volumes:
 
 networks:
   app-network:
+    name: app-network # Explicit name
+    driver: bridge
