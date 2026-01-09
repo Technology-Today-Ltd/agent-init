@@ -214,10 +214,12 @@ echo "✓ Docker services started"
 # initialize database
 
 echo "Initializing db..."
-if curl --fail --retry 4 --retry-delay 2 --retry-connrefused --retry-all-errors -X POST "http://localhost/api/init"; then
+if curl -k --fail --retry 4 --retry-delay 2 --retry-connrefused --retry-all-errors \
+  -X POST "https://localhost/api/init" \
+  -H "Host: ${DOMAIN_NAME:-yourdomain.com}"; then
     echo "Backend initialized"
 else
-    echo "Failed to initialize backend, manual post request to  http://localhost/api/init required"
+    echo "Failed to initialize backend, manual post request to https://localhost/api/init required"
 fi
 # ====================================
 # Done
