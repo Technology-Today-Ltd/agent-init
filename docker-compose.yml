@@ -1,4 +1,38 @@
 services:
+  traefik:
+    image: traefik:v3.2
+    restart: unless-stopped
+    command:
+      # Providers
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=proxy"
+
+      # Entry points
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # HTTP to HTTPS redirect
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      # Let's Encrypt configuration
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+
+      # Logging
+      - "--log.level=INFO"
+      - "--accesslog=true"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080" # Traefik dashboard (optional)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    networks:
+      - app-network
+
   vite:
     image: ghcr.io/mijackk/agent-chat:latest
     restart: unless-stopped
@@ -12,6 +46,13 @@ services:
       sh -c 'echo "{ \"api_url\":\"${API_URL:-http://localhost}\"}" 
       > /usr/share/nginx/html/config/config.json 
       && nginx -g "daemon off;"'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vite.rule=Host(`${DOMAIN_NAME:-localhost}`)"
+      - "traefik.http.routers.vite.priority=1"
+      - "traefik.http.routers.vite.entrypoints=websecure"
+      - "traefik.http.routers.vite.tls.certresolver=letsencrypt"
+      - "traefik.http.services.vite.loadbalancer.server.port=80"
   app:
     image: ghcr.io/mijackk/agent-backend:latest
     restart: unless-stopped
@@ -44,6 +85,13 @@ services:
 
     env_file:
       - .env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app.rule=Host(`${DOMAIN_NAME:-localhost}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.app.priority=2"
+      - "traefik.http.routers.app.entrypoints=websecure"
+      - "traefik.http.routers.app.tls.certresolver=letsencrypt"
+      - "traefik.http.services.app.loadbalancer.server.port=80"
 
   # can delete the below if already installed
 
@@ -89,16 +137,6 @@ services:
     # Optional: Add custom Qdrant config
     # volumes:
     #   - ./qdrant_config.yaml:/qdrant/config/production.yaml
-
-  nginx:
-    image: nginx:alpine
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    networks:
-      - app-network
 
 volumes:
   postgres_data:
