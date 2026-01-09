@@ -96,9 +96,9 @@ services:
       - "traefik.http.services.app.loadbalancer.server.port=5000"
       # NEW: Add redirect for localhost
       - "traefik.http.routers.localhost-redirect.rule=Host(`localhost`)"
-      - "traefik.http.routers.localhost-redirect.entrypoints=web"
-      - "traefik.http.routers.localhost-redirect.middlewares=redirect-to-app"
       - "traefik.http.routers.localhost-redirect.priority=1"
+      - "traefik.http.routers.localhost-redirect.entrypoints=web"
+      - "traefik.http.services.localhost-redirectloadbalancer.server.port=5000"
 
   # can delete the below if already installed
 
