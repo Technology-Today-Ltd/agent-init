@@ -15,10 +15,6 @@ services:
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
       - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
-        # Apply redirect to all HTTP traffic EXCEPT localhost
-      - "traefik.http.routers.http-catchall.rule=HostRegexp(`{host:.+}`) && !Host(`localhost`)"
-      - "traefik.http.routers.http-catchall.entrypoints=web"
-      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
       # Let's Encrypt configuration
       - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
@@ -92,22 +88,14 @@ services:
     env_file:
       - .env
     labels:
-      # Main app router
       - "traefik.enable=true"
       - "traefik.http.routers.app.rule=Host(`${DOMAIN_NAME:-localhost}`) && PathPrefix(`/api`)"
       - "traefik.http.routers.app.priority=2"
       - "traefik.http.routers.app.entrypoints=websecure"
       - "traefik.http.routers.app.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.app.service=app"
-
-      # Local redirect router
-      - "traefik.http.routers.local.rule=Host(`localhost`)"
-      - "traefik.http.routers.local.priority=1"
-      - "traefik.http.routers.local.entrypoints=web"
-      - "traefik.http.routers.local.service=app"
-
-      # Service definition
       - "traefik.http.services.app.loadbalancer.server.port=5000"
+
+  # can delete the below if already installed
 
   db:
     image: postgres:16
@@ -163,5 +151,5 @@ volumes:
 
 networks:
   app-network:
-    name: app-network
+    name: app-network # Explicit name
     driver: bridge
