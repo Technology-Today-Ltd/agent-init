@@ -17,8 +17,6 @@ OPENAI_API_KEY=
 # Authentication & API Tokens
 ADMIN_EMAIL=admin@admin.com
 # API key for currency information from data.fixer.io
-CURRENCY_API_KEY=
-PORTAL_API_TOKEN=
 LICENSE_KEY=
 CONTROL_URL=
 #github
